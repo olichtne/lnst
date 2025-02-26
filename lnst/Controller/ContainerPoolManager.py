@@ -498,11 +498,16 @@ class ContainerPoolManager(object):
         logging.info("Cleaning containers")
 
         for m_id, container in self._containers.items():
-            logging.debug("Stopping container " + m_id)
-            container.stop()
+            try:
+                logging.debug("Stopping container " + m_id)
+                container.stop()
 
-            logging.debug("Removing container " + m_id)
-            container.remove()
+                logging.debug("Removing container " + m_id)
+                container.remove()
+            except Exception as e:
+                logging.exception(f"Error during container cleanup: {e}")
+
+        self._containers = {}
 
     def cleanup_networks(self):
         for name, network in self._networks.items():
@@ -514,6 +519,8 @@ class ContainerPoolManager(object):
                 self._cleanup_custom_network(network)
             else:
                 raise PoolManagerError(f"Can't cleanup this type of network {type(network)}")
+
+        self._networks = {}
 
     def _cleanup_podman_network(self, network: "Network"):
         try:
