@@ -62,7 +62,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install pylint3
+          sudo apt-get install pylint
 
       - name: Imports check
         run: |
