@@ -19,7 +19,7 @@ echo Install LNST
 sudo apt-get install -y iputils-* \
 ethtool \
 gcc \
-python-dev \
+python3-dev \
 libxml2-dev \
 libxslt-dev \
 qemu-kvm \
