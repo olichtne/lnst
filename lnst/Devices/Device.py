@@ -777,7 +777,13 @@ class Device(object, metaclass=DeviceMeta):
 
     def up_and_wait(self, timeout: int = TOGGLE_STATE_TIMEOUT):
         self.up()
-        wait_for_condition(lambda: "up" in self.state, timeout=timeout)
+
+        def condition():
+            self._if_manager.rescan_devices()
+            logging.debug(f"checking for up/lower_up/running states in: {self.state}")
+            return set(["up", "lower_up", "running"]).issubset(self.state)
+
+        wait_for_condition(condition, timeout=timeout)
 
     def down_and_wait(self, timeout: int = TOGGLE_STATE_TIMEOUT):
         self.down()
