@@ -59,8 +59,11 @@ class SimpleNetnsRouterRecipe(SimpleNetworkRecipe):
         config.configure_and_track_ip(self.forwarder_egress_nic, next(ipv6_addr))
         config.configure_and_track_ip(self.receiver_nic, next(ipv4_addr))
         config.configure_and_track_ip(self.receiver_nic, next(ipv6_addr))
-        self.forwarder_egress_nic.up_and_wait()
+        # a veth end only gets carrier once both ends are administratively up,
+        # so set UP on both before waiting for the lower_up/running states
+        self.forwarder_egress_nic.up()
         self.receiver_nic.up_and_wait()
+        self.forwarder_egress_nic.up_and_wait()
 
         for gw in (self.params.netns_ipv4[1], self.params.netns_ipv6[1]):
             self.receiver_nic.netns.run(f"ip route add default via {gw}")
