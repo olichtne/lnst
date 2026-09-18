@@ -783,11 +783,18 @@ class Device(object, metaclass=DeviceMeta):
             logging.debug(f"checking for up/lower_up/running states in: {self.state}")
             return set(["up", "lower_up", "running"]).issubset(self.state)
 
-        wait_for_condition(condition, timeout=timeout)
+        try:
+            wait_for_condition(condition, timeout=timeout)
+        except TimeoutError:
+            raise DeviceError("Timed-out waiting for UP states")
 
     def down_and_wait(self, timeout: int = TOGGLE_STATE_TIMEOUT):
         self.down()
-        wait_for_condition(lambda: "up" not in self.state, timeout=timeout)
+
+        try:
+            wait_for_condition(lambda: "up" not in self.state, timeout=timeout)
+        except TimeoutError:
+            raise DeviceError("Timed-out waiting for DOWN states")
 
     #TODO looks like python ethtool module doesn't support these so we'll keep
     #exec_cmd for now...
@@ -1064,8 +1071,8 @@ class Device(object, metaclass=DeviceMeta):
         try:
             wait_for_condition(condition, timeout=timeout)
         except TimeoutError:
-            logging.info(f"Timeout while waiting for vfs creation on PF {self.name}")
-            raise
+            logging.error(f"Timeout while waiting for vfs creation on PF {self.name}")
+            return False
 
         logging.info(f"vfs on PF {self.name} successfully created")
 
@@ -1087,8 +1094,8 @@ class Device(object, metaclass=DeviceMeta):
         try:
             wait_for_condition(condition, timeout=timeout)
         except TimeoutError:
-            logging.info(f"Timeout while waiting for vf_reps creation on PF {self.name}")
-            raise
+            logging.error(f"Timeout while waiting for vf_reps creation on PF {self.name}")
+            return False
 
         logging.info(f"vf_reps on PF {self.name} successfully created")
 
